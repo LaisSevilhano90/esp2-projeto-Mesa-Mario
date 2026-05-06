@@ -3,7 +3,7 @@
  *  Descrição: Neste projeto haverão dois displays onde serão exibidos os funcionários e se estes estão trabalhando, permitindo que os mesmos registrem seus inícios e finais de turno.
  *  Projeto: Bater ponto - Sistema de presença de funcionários
  *  Data: 06/05/2026
- *  Versão: 0.3
+ *  Versão: 0.4
  */
 
 #include <Arduino.h>
@@ -12,12 +12,24 @@
 #include "DebugManager.h"
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
+#include <LiquidCrystal_I2C.h>
 
 const int PINO_LED_RGB = 48;
 const int QUANTIDADE_LEDS = 1;
 const int PINO_LAMPADA = 15;
 
 const char TOPICO_COMANDO[] = "senai134/pedroleonel/esp32/comando";
+
+const int BotaoUP = 15;
+const int BotaoDOWN = 16;
+const int BotaoSELECT = 17;
+
+int coordenada = 0;
+
+bool LaisisTrabalhando = false;
+bool LeonardoisTrabalhando = false;
+bool LuigiisTrabalhando = false;
+bool PedroisTrabalhando = false;
 
 bool lampada = false;
 
@@ -47,11 +59,10 @@ void setup()
 
 void loop()
 {
+
   garantirWiFiConectado();
   garantirMQTTConectado();
   loopMQTT();
-
-
 }
 
 void tratarMensagemRecebida(const char *topico, const String &mensagem)
@@ -151,8 +162,8 @@ void tratarJsonComando(const String &mensagem)
     debugErro("Checar a conexão da lampamda com o LED");
     debugErro("Checar erro no JSON");
   }
-  
 }
+
 void acenderLampada(bool lampadaParametro)
 {
   debugInfo("entrou aqui");
@@ -162,5 +173,70 @@ void acenderLampada(bool lampadaParametro)
   debugInfo("Estado da Lampada: " + String(lampada));
 }
 
+void AtualizarLED()
+{
 
 
+
+
+}
+
+void AtualizarDisplay()
+{
+
+  lcd.setCursor(1, 0);
+  lcd.print("Lais");
+  lcd.setCursor(2, 1);
+  lcd.print("Leonardo");
+  lcd.setCursor(3, 2);
+  lcd.print("Luigi");
+  lcd.setCursor(4, 3);
+  lcd.print("Pedro");
+
+  switch (coordenada)
+  {
+  case 0:
+    lcd.setCursor(0, 0);
+    lcd.print(">");
+    lcd.setCursor(0, 1);
+    lcd.print(" ");
+    lcd.setCursor(0, 2);
+    lcd.print(" ");
+    lcd.setCursor(0, 3);
+    lcd.print(" ");
+    break;
+  case 1:
+    lcd.setCursor(0, 0);
+    lcd.print(" ");
+    lcd.setCursor(0, 1);
+    lcd.print(">");
+    lcd.setCursor(0, 2);
+    lcd.print(" ");
+    lcd.setCursor(0, 3);
+    lcd.print(" ");
+    break;
+  case 2:
+    lcd.setCursor(0, 0);
+    lcd.print(" ");
+    lcd.setCursor(0, 1);
+    lcd.print(" ");
+    lcd.setCursor(0, 2);
+    lcd.print(">");
+    lcd.setCursor(0, 3);
+    lcd.print(" ");
+    break;
+  case 3:
+    lcd.setCursor(0, 0);
+    lcd.print(" ");
+    lcd.setCursor(0, 1);
+    lcd.print(" ");
+    lcd.setCursor(0, 2);
+    lcd.print(" ");
+    lcd.setCursor(0, 3);
+    lcd.print(">");
+    break;
+  default:
+    coordenada = 0;
+    break;
+  }
+}
