@@ -44,6 +44,7 @@ void configurarLedRGB();
 void alterarCorLedRGB(int vermelho, int verde, int azul);
 void tratarJsonComando(const String &mensagem);
 void acenderLampada(bool lampadaParametro);
+void coletarHora();
 
 void setup()
 {
@@ -239,4 +240,56 @@ void AtualizarDisplay()
     coordenada = 0;
     break;
   }
+}
+
+void coletarHora()
+{
+  WiFiClientSecure client;
+
+  client.setInsecure();
+
+  HTTPClient http;
+
+  if (!http.begin(client, URL_API))
+  {
+    Serial.println();
+    Serial.println("Falha ao iniciar a conexão HTTP");
+    return;
+  }
+
+  http.setTimeout(10000);
+
+  int httpCode = http.GET();
+
+  if (httpCode > 0)
+  {
+    Serial.println("Codigo HTTP: ");
+    Serial.print(httpCode);
+
+    if (httpCode == HTTP_CODE_OK)
+    {
+      String resposta = http.getString();
+      //USAR SE DER ERRO NA API
+      Serial.println("resposta bruta da API: ");
+      Serial.print(resposta);
+      JsonDocument doc;
+      DeserializationError erro = deserializeJson(doc, resposta);
+
+      if (!erro)
+      {
+          tempoLocal = doc["localtime"].as<String>();
+      }
+    }
+    else
+    {
+      Serial.print("A API respondeu, mas com codigo de erro: "); // se for diferente de 200(Esse 200 foi obtido la no http.GET()) mostra isso
+      Serial.println(httpCode);
+    }
+  }
+  else // se httpCode <= 0
+  {
+    Serial.print("Erro na requisiçao HTTP: ");
+    Serial.println(http.errorToString(httpCode));
+  }
+  http.end();
 }

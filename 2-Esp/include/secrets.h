@@ -17,6 +17,8 @@ extern const bool USAR_AWS_IOT;
 extern const char* MQTT_BROKER;
 extern const int MQTT_PORTA;
 
+extern const char* URL_API;
+
 // o ID do mqtt sempre vai ser diferente
 // nunca criar um id igual de alguem pois ele nao permite e fica desconectando um
 extern const char* MQTT_CLIENT_ID;
