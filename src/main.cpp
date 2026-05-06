@@ -1,9 +1,9 @@
 /**
- *  Nome: Pedro Leonel de Lorena
- *  Descrição: Este projeto realiza a conexao do esp com o wifi e o protocolo mqtt
- *  Projeto: conexao MQTT
- *  Data: 28/04
- *  Versão: 1.0
+ *  Nome: Pedro Leonel de Lorena, Leonardo Ferrarese Correa, Lais Rodrigues Sevilhano & Luigi Arnosti Reginato
+ *  Descrição: Neste projeto haverão dois displays onde serão exibidos os funcionários e se estes estão trabalhando, permitindo que os mesmos registrem seus inícios e finais de turno.
+ *  Projeto: Bater ponto - Sistema de presença de funcionários
+ *  Data: 06/05/2026
+ *  Versão: 0.3
  */
 
 #include <Arduino.h>
