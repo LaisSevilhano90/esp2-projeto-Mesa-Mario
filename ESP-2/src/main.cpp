@@ -16,14 +16,16 @@
 #include <HTTPClient.h>
 #include <LiquidCrystal_I2C.h>
 
-LiquidCrystal_I2C lcd(0x27, 20,4);
+LiquidCrystal_I2C lcd(0x3F, 20, 4);
 
 void AtualizarDisplay();
-
+void trocarTela();
 const int PINO_LED_RGB = 48;
 const int QUANTIDADE_LEDS = 1;
 const int PINO_LAMPADA = 15;
-
+int telaAtual = 0;
+unsigned long ultimaTroca = 0;
+const unsigned long INTERVALO = 3000;; // 10 segundos
 
 String tempoLocal;
 
@@ -54,6 +56,12 @@ void setup()
   configurarMQTT();
   registrarCallBackMensagem(tratarMensagemRecebida);
   conectarMQTT();
+  
+  //* LCD 
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Carregando:");
 }
 
 void loop()
@@ -61,7 +69,8 @@ void loop()
   garantirWiFiConectado();
   garantirMQTTConectado();
   loopMQTT();
-
+  //*LCD
+  trocarTela();
 }
 
 void tratarMensagemRecebida(const char *topico, const String &mensagem)
@@ -224,62 +233,47 @@ void coletarHora()
   http.end();
 }
 
-void AtualizarDisplay()
-{
 
-  lcd.setCursor(1, 0);
-  lcd.print("Lais");
-  lcd.setCursor(2, 1);
-  lcd.print("Leonardo");
-  lcd.setCursor(3, 2);
-  lcd.print("Luigi");
-  lcd.setCursor(4, 3);
-  lcd.print("Pedro");
 
-  switch (coordenada)
-  {
-  case 0:
-    lcd.setCursor(0, 0);
-    lcd.print(">");
-    lcd.setCursor(0, 1);
-    lcd.print(" ");
-    lcd.setCursor(0, 2);
-    lcd.print(" ");
-    lcd.setCursor(0, 3);
-    lcd.print(" ");
-    break;
-  case 1:
-    lcd.setCursor(0, 0);
-    lcd.print(" ");
-    lcd.setCursor(0, 1);
-    lcd.print(">");
-    lcd.setCursor(0, 2);
-    lcd.print(" ");
-    lcd.setCursor(0, 3);
-    lcd.print(" ");
-    break;
-  case 2:
-    lcd.setCursor(0, 0);
-    lcd.print(" ");
-    lcd.setCursor(0, 1);
-    lcd.print(" ");
-    lcd.setCursor(0, 2);
-    lcd.print(">");
-    lcd.setCursor(0, 3);
-    lcd.print(" ");
-    break;
-  case 3:
-    lcd.setCursor(0, 0);
-    lcd.print(" ");
-    lcd.setCursor(0, 1);
-    lcd.print(" ");
-    lcd.setCursor(0, 2);
-    lcd.print(" ");
-    lcd.setCursor(0, 3);
-    lcd.print(">");
-    break;
-  default:
-    coordenada = 0;
-    break;
-  }
+
+//!FUNCAO TROCAR TELA LCD
+
+void trocarTela() {
+    unsigned long agora = millis();
+    
+    if (agora - ultimaTroca >= INTERVALO) {
+        ultimaTroca = agora;
+        telaAtual = (telaAtual + 1) % 4; // cicla entre 0, 1, 2 e 3
+        lcd.clear(); // só limpa quando troca de tela
+        delay(50);
+        switch (telaAtual) {
+            case 0:
+                lcd.setCursor(0, 0);
+                lcd.print("Lais:");
+                lcd.setCursor(0, 1);
+                lcd.print("//colocar variavel");
+                break;
+
+            case 1:
+                lcd.setCursor(0, 0);
+                lcd.print("Luigi:");
+                lcd.setCursor(0, 1);
+                lcd.print("//colocar variavel");
+                break;
+
+            case 2:
+                lcd.setCursor(0, 0);
+                lcd.print("Leonardo:");
+                lcd.setCursor(0, 1);
+                lcd.print("//colocar variavel");
+                break;
+
+            case 3:
+                lcd.setCursor(0, 0);
+                lcd.print("Pedro:");
+                lcd.setCursor(0, 1);
+                lcd.print("//colocar variavel");
+                break;
+        }
+    }
 }

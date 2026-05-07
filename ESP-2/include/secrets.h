@@ -52,7 +52,7 @@ extern const int TOTAL_TOPICOS_RECEBER;
 extern const int DEBUG_NIVEL_INICIAL;
 
 // Pino usado para forçar todas as mensagens na inicialização
-extern const int PINO_HABILITAR_DEBUG_COMPLETO;
+extern const int PINO_HABILITA_DEBUG_COMPLETO;
 
 
 #endif
