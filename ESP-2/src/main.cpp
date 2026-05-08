@@ -1,9 +1,9 @@
 /**
- *  Nome: Pedro Leonel de Lorena
- *  Descrição: Este projeto realiza a conexao do esp com o wifi e o protocolo mqtt
- *  Projeto: conexao MQTT
- *  Data: 28/04
- *  Versão: 1.0
+ *  Nome: Pedro Leonel de Lorena, Leonardo Ferrarese Correa, Lais Rodrigues Sevilhano & Luigi Arnosti Reginato
+ *  Descrição: Neste projeto haverão dois displays onde serão exibidos os funcionários e se estes estão trabalhando, permitindo que os mesmos registrem seus inícios e finais de turno.
+ *  Projeto: Bater ponto - Sistema de presença de funcionários
+ *  Data: 06/05/2026
+ *  Versão: 0.4
  */
 
 #include <Arduino.h>
@@ -18,20 +18,41 @@
 
 LiquidCrystal_I2C lcd(0x3F, 20, 4);
 
-void AtualizarDisplay();
-void trocarTela();
+
+// PINOS
+
 const int PINO_LED_RGB = 48;
 const int QUANTIDADE_LEDS = 1;
 const int PINO_LAMPADA = 15;
+
+// VARIAVEIS TELA
 int telaAtual = 0;
 unsigned long ultimaTroca = 0;
 const unsigned long INTERVALO = 3000;; // 10 segundos
 
-String tempoLocal;
+// VARIAVEIS JSON
+String funcionario;
+String statusDeTrabalho;
+String horaDoPontoBatido;
 
+String statusLais;
+String horaLais;
+
+String statusLuigi;
+String horaLuigi;
+
+String statusLeonardo;
+String horaLeonardo;
+
+String statusPedro;
+String horaPedro;
+
+// TOPICO 
 const char TOPICO_COMANDO[] = "senai134/pedroleonel/esp32/comando";
 
+//  variavel para controlar o estado da lampada
 bool lampada = false;
+
 
 Adafruit_NeoPixel ledRGB(
     QUANTIDADE_LEDS,
@@ -39,12 +60,15 @@ Adafruit_NeoPixel ledRGB(
     NEO_GRB + NEO_KHZ800 // constante de configuração
 );
 
+//* PROTOTIPOS DAS FUNÇÕES
+
 void tratarMensagemRecebida(const char *topico, const String &mensagem);
 void configurarLedRGB();
 void alterarCorLedRGB(int vermelho, int verde, int azul);
 void tratarJsonComando(const String &mensagem);
 void acenderLampada(bool lampadaParametro);
-void coletarHora();
+void trocarTela();
+
 
 void setup()
 {
@@ -170,6 +194,61 @@ void tratarJsonComando(const String &mensagem)
     debugErro("Checar a conexão da lampamda com o LED");
     debugErro("Checar erro no JSON");
   }
+
+  //* Deserialize do Json do nosso MQTT do esp1
+
+  if (doc["Funcionario"].is<String>())
+  {
+    funcionario = doc["Funcionario"].as<String>();
+    debugInfo("Funcionario : " + funcionario);
+  }
+  else
+  {
+    debugErro("Checar se o nome do funcionario está correto no JSON");
+    debugErro("Checar se há erro no JSON");
+  }
+   if (doc["Status"].is<String>())
+  {
+    statusDeTrabalho = doc["Status"].as<String>();
+    debugInfo("Status: " + statusDeTrabalho);
+  }
+  else
+  {
+    debugErro("Checar se escreveu errado o nome no doc do status de trabalho");
+    debugErro("Checar se há erro no JSON");
+  }
+   if (doc["Hora"].is<String>())
+  {
+    horaDoPontoBatido = doc["Hora"].as<String>();
+    debugInfo("Hora do Ponto Batido : " + horaDoPontoBatido);
+  }
+  else
+  {
+    debugErro("Checar se escreveu errado o nome no doc do Hora do ponto batido");
+    debugErro("Checar erro no JSON");
+  }
+
+  if (funcionario == "Lais")
+  { 
+    statusLais = statusDeTrabalho;
+    horaLais = horaDoPontoBatido;
+  }
+  else if (funcionario == "Luigi")
+  {
+    statusLuigi = statusDeTrabalho;
+    horaLuigi = horaDoPontoBatido;
+  }
+  else if (funcionario == "Leonardo")
+  {
+    statusLeonardo = statusDeTrabalho;
+    horaLeonardo = horaDoPontoBatido;
+  }
+  else if (funcionario == "Pedro")
+  {
+    statusPedro = statusDeTrabalho;
+    horaPedro = horaDoPontoBatido;
+  }
+
 }
 
 void acenderLampada(bool lampadaParametro)
@@ -180,61 +259,6 @@ void acenderLampada(bool lampadaParametro)
   digitalWrite(PINO_LAMPADA, lampada);
   debugInfo("Estado da Lampada: " + String(lampada));
 }
-
-void coletarHora()
-{
-  WiFiClientSecure client;
-
-  client.setInsecure();
-
-  HTTPClient http;
-
-  if (!http.begin(client, URL_API))
-  {
-    Serial.println();
-    Serial.println("Falha ao iniciar a conexão HTTP");
-    return;
-  }
-
-  http.setTimeout(10000);
-
-  int httpCode = http.GET();
-
-  if (httpCode > 0)
-  {
-    Serial.println("Codigo HTTP: ");
-    Serial.print(httpCode);
-
-    if (httpCode == HTTP_CODE_OK)
-    {
-      String resposta = http.getString();
-      //USAR SE DER ERRO NA API
-      Serial.println("resposta bruta da API: ");
-      Serial.print(resposta);
-      JsonDocument doc;
-      DeserializationError erro = deserializeJson(doc, resposta);
-
-      if (!erro)
-      {
-          tempoLocal = doc["localtime"].as<String>();
-      }
-    }
-    else
-    {
-      Serial.print("A API respondeu, mas com codigo de erro: "); // se for diferente de 200(Esse 200 foi obtido la no http.GET()) mostra isso
-      Serial.println(httpCode);
-    }
-  }
-  else // se httpCode <= 0
-  {
-    Serial.print("Erro na requisiçao HTTP: ");
-    Serial.println(http.errorToString(httpCode));
-  }
-  http.end();
-}
-
-
-
 
 //!FUNCAO TROCAR TELA LCD
 
@@ -251,28 +275,36 @@ void trocarTela() {
                 lcd.setCursor(0, 0);
                 lcd.print("Lais:");
                 lcd.setCursor(0, 1);
-                lcd.print("//colocar variavel");
+                lcd.print("Status: " + statusLais);
+                lcd.setCursor(0, 2);
+                lcd.print("Hora do Ponto: " + horaLais);
                 break;
 
             case 1:
                 lcd.setCursor(0, 0);
                 lcd.print("Luigi:");
                 lcd.setCursor(0, 1);
-                lcd.print("//colocar variavel");
+                lcd.print("Status: " + statusLuigi);
+                lcd.setCursor(0, 2);
+                lcd.print("Hora do Ponto: " + horaLuigi);
                 break;
 
             case 2:
                 lcd.setCursor(0, 0);
                 lcd.print("Leonardo:");
                 lcd.setCursor(0, 1);
-                lcd.print("//colocar variavel");
+                lcd.print("Status: " + statusLeonardo);
+                lcd.setCursor(0, 2);
+                lcd.print("Hora do Ponto: " + horaLeonardo);
                 break;
 
             case 3:
                 lcd.setCursor(0, 0);
                 lcd.print("Pedro:");
                 lcd.setCursor(0, 1);
-                lcd.print("//colocar variavel");
+                lcd.print("Status: " + statusPedro);
+                lcd.setCursor(0, 2);
+                lcd.print("Hora do Ponto: " + horaPedro);
                 break;
         }
     }
